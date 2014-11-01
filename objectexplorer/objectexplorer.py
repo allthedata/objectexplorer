@@ -19,31 +19,37 @@ auto refresh
 don't block the terminal even when not running in IPython
 '''
 
-from __future__ import nested_scopes, generators, division, absolute_import, with_statement, print_function, unicode_literals
+from __future__ import nested_scopes, generators, division, absolute_import, \
+    with_statement, print_function, unicode_literals
 import numpy as np
 import pandas as pd
-#import sip
 import sys
 from copy import copy
 from re import split
-#from functools import partial
-from spyderlib.qt import QtGui
-#from PyQt4 import QtGui
-#from PyQt4 import QtCore
+# from functools import partial
+try:
+    import sip
+    sip.setapi('QString', 2)
+    sip.setapi('QVariant', 2)
+    from PyQt4 import QtGui
+except ImportError:
+    from PySide import QtGui
 from IPython.lib import guisupport
-import objectexplorer_ui
+if __name__ == '__main__':
+    from objectexplorer_ui import Ui_ObjectExplorer  # can't do relative import if run directly (for testing before packaging)
+    # only works if working directory contains objectexplorer_ui.py
+else:
+    from .objectexplorer_ui import Ui_ObjectExplorer  # for when objectexplorer is imported
 
-#assert sip.getapi('QString') == 2
 
-
-class ObjectExplorer(QtGui.QMainWindow, objectexplorer_ui.Ui_ObjectExplorer):
+class ObjectExplorer(QtGui.QMainWindow, Ui_ObjectExplorer):
     '''Object explorer'''
     def __init__(self, parent=None):
         super(ObjectExplorer, self).__init__(parent)  # boilerplate
         self.setupUi(self)  # boilerplate
         self.pushButton.clicked.connect(self.add_root)
         self.actionCopy_path.triggered.connect(self.copy_path)
-        #self.actionExit.triggered.connect(partial(self.closeEvent, QtGui.QCloseEvent()))  # use partial to pass argument to slot
+        # self.actionExit.triggered.connect(partial(self.closeEvent, QtGui.QCloseEvent()))  # use partial to pass argument to slot
         self.actionExit.triggered.connect(self.close)
         self.treeWidget.addAction(self.actionCopy_path)  # adds action to treeWidget's right click menu
 
@@ -103,7 +109,7 @@ class ObjectExplorer(QtGui.QMainWindow, objectexplorer_ui.Ui_ObjectExplorer):
             current_path = self.get_path(key, parent_cat, parent_path)
             current_item.setToolTip(0, current_path)  # add tooltip
             if current_cat != 'other' and any(item is value for item in obj_chain):  # detect circular references
-                #current_item.setTextColor(0, QtGui.QColor(255, 0, 0))
+                # current_item.setTextColor(0, QtGui.QColor(255, 0, 0))
                 current_item.setForeground(0, QtGui.QColor(255, 0, 0))
                 self.statusBar().showMessage('Circular reference detected: ' + str(value))
             elif current_cat != 'other':
@@ -240,8 +246,8 @@ if __name__ == '__main__':
     my_namespace.n = 8
     my_namespace.o = bytearray(b'hello')
     app = guisupport.get_app_qt4()
-    #app = QtGui.QApplication(sys.argv)
+    # app = QtGui.QApplication(sys.argv)
     form = ObjectExplorer()
     form.show()
     guisupport.start_event_loop_qt4(app)  # doesn't block terminal when run in ipython
-    #app.exec_()
+    # app.exec_()

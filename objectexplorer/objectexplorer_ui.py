@@ -7,7 +7,13 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PySide import QtCore, QtGui
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    import sip
+    sip.setapi('QString', 2)
+    sip.setapi('QVariant', 2)
+    from PyQt4 import QtCore, QtGui
 
 class Ui_ObjectExplorer(object):
     def setupUi(self, ObjectExplorer):
